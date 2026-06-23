@@ -65,7 +65,6 @@ jobs:
           name: All-Test-Results
           path: TestResults/
           retention-days: 7
-
   apply-migrations:
     name: Apply Database Migrations
     runs-on: ubuntu-latest
@@ -89,8 +88,15 @@ jobs:
 
       - name: Migrate ContactDb
         env:
+          # الـ Env هنا بنجبر بيه السيستم كله يشوف السيرفر الحقيقي بدل الـ LocalDB في كل مكان
           ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
-        run: dotnet ef database update --project ContactsManager.UI --context AppDBContext
+          Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
+        run: |
+          dotnet ef database update \
+            --project ../ContactsManager.Infrastructure/ContactsManager.Infrastructure.csproj \
+            --startup-project ContactsManager.UI.csproj \
+            --context AppDBContext
+        working-directory: ContactsManager.UI
 
   build-image:
     name: Build Docker Image
