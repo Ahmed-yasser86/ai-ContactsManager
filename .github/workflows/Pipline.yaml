@@ -73,7 +73,6 @@ jobs:
         run: dotnet build --no-restore
         working-directory: ContactsManager.UI
 
-# 3. جوب الاختبارات ورفع التقارير (تجمع كل مشاريع التيست)
   test:
     name: Run All Tests & Upload Reports
     runs-on: ubuntu-latest
@@ -97,9 +96,11 @@ jobs:
         run: dotnet restore --locked-mode --disable-build-servers -p:UseMultiToolProvider=false
         working-directory: ContactsManager.UI 
 
-      - name: Run all tests with unified report
-        run: dotnet test ../ContactsManager.sln --configuration Release --no-build --logger "trx" --results-directory ../TestResults
-        working-directory: ContactsManager.UI
+      - name: Run Specified Unit and Integration Tests
+        run: |
+          dotnet test Tests/ContactsManger.ServiceTests.csproj --configuration Release --logger "trx;LogFileName=ServiceTests.trx" --results-directory ./TestResults
+          dotnet test ContactsManager.ControllersTest/ContactsManager.ControllersTest.csproj --configuration Release --logger "trx;LogFileName=ControllersTest.trx" --results-directory ./TestResults
+          dotnet test ContactsManager.IntegrationTests/ContactsManager.IntegrationTests.csproj --configuration Release --logger "trx;LogFileName=IntegrationTests.trx" --results-directory ./TestResults
 
       - name: Upload all test results
         uses: actions/upload-artifact@v4
