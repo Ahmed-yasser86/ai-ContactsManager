@@ -85,9 +85,11 @@ jobs:
         with:
           global-json-file: ContactsManager.UI/global.json 
 
-      - name: Restore dependencies
-        run: dotnet restore
-        working-directory: ContactsManager.UI
+      - name: Restore Infrastructure Project
+        run: dotnet restore ContactsManager.Infrastructure/ContactsManager.Infrastructure.csproj
+
+      - name: Restore UI Project
+        run: dotnet restore ContactsManager.UI/ContactsManager.UI.csproj
 
       - name: Install EF Core CLI Tool
         run: dotnet tool install --global dotnet-ef
@@ -98,7 +100,7 @@ jobs:
             --project ContactsManager.Infrastructure/ContactsManager.Infrastructure.csproj \
             --startup-project ContactsManager.UI/ContactsManager.UI.csproj \
             --context AppDBContext
-
+          
   build-image:
     name: Build Docker Image
     runs-on: ubuntu-latest
