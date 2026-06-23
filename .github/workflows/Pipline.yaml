@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  workflow_dispatch:  
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+    types:
+      - opened
+      - edited
+      - review_requested
+      - synchronize
+      - reopened    
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5.3.0
+      with:
+        global-json-file: ContactsManager.UI/global.json 
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ContactsManager.UI 
+
+    - name: Build
+      run: dotnet build --no-restore
+      working-directory: ContactsManager.UI
+
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+      working-directory: ContactsManager.UI
