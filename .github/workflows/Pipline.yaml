@@ -14,20 +14,13 @@ on:
       - reopened    
 
 jobs:
-  build-and-test:
-    name: Lint, Build & Test
+  lint:
+    name: Lint Code base
     runs-on: ubuntu-latest
-  
     permissions:
       contents: read
       checks: write
       pull-requests: write
-
-    env:
-      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
-      ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
-      Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
-
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v7.0.0
@@ -48,9 +41,55 @@ jobs:
         with:
           dotnet_format: true    
 
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7.0.0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4  
+        with:
+          global-json-file: ContactsManager.UI/global.json 
+          cache: true
+          cache-dependency-path: 'ContactsManager.UI/**/packages.lock.json'
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode --disable-build-servers -p:UseMultiToolProvider=false
+        working-directory: ContactsManager.UI 
+
       - name: Build
         run: dotnet build --no-restore
         working-directory: ContactsManager.UI
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    env:
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
+      Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7.0.0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4  
+        with:
+          global-json-file: ContactsManager.UI/global.json 
+          cache: true
+          cache-dependency-path: 'ContactsManager.UI/**/packages.lock.json'
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode --disable-build-servers -p:UseMultiToolProvider=false
+        working-directory: ContactsManager.UI 
 
       - name: Run Specified Unit and Integration Tests
         run: |
@@ -69,7 +108,9 @@ jobs:
   apply-migrations:
     name: Apply Database Migrations
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: test
+    permissions:
+      contents: read
 
     env:
       ASPNETCORE_ENVIRONMENT: Production
@@ -104,7 +145,10 @@ jobs:
   build-image:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: test
+    permissions:
+      contents: read
+      actions: write
 
     steps:
       - name: Check Out Code
@@ -123,3 +167,4 @@ jobs:
           build-args: |
             ConnectionStrings__ContactDb=${{ secrets.DB_CONNECTION_STRING }}
             Serilog__WriteTo__2__Args__connectionString=${{ secrets.SERILOG_DB_CONNECTION }}
+        
