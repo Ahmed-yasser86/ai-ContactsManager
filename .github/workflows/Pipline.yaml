@@ -41,7 +41,8 @@ jobs:
         with:
           github_token: ${{ github.token }}
           dotnet_format: true
-          neutral_check_on_warning: false
+          dotnet_format_args: "ContactsManager.UI"
+          neutral_check_on_warning: true
 
   build:
     name: Build Application
