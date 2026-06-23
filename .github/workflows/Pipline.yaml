@@ -170,4 +170,3 @@ jobs:
           build-args: |
             ConnectionStrings__ContactDb=${{ secrets.DB_CONNECTION_STRING }}
             Serilog__WriteTo__2__Args__connectionString=${{ secrets.SERILOG_DB_CONNECTION }}
-        
