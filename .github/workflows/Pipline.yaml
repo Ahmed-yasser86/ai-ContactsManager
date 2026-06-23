@@ -86,7 +86,7 @@ jobs:
           global-json-file: ContactsManager.UI/global.json 
 
       - name: Restore Infrastructure Project
-        run: dotnet restore ContactsManager.Infrastructure/ContactsManager.Infrastructure.csproj
+        run: dotnet restore ContactsManager.Inferastructure/ContactsManager.Inferastructure.csproj
 
       - name: Restore UI Project
         run: dotnet restore ContactsManager.UI/ContactsManager.UI.csproj
@@ -97,7 +97,7 @@ jobs:
       - name: Migrate ContactDb
         run: |
           dotnet ef database update \
-            --project ContactsManager.Infrastructure/ContactsManager.Infrastructure.csproj \
+            --project ContactsManager.Inferastructure/ContactsManager.Inferastructure.csproj \
             --startup-project ContactsManager.UI/ContactsManager.UI.csproj \
             --context AppDBContext
           
