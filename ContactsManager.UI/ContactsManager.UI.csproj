@@ -4,8 +4,16 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
 
+
+
+			<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+<DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+
+
+  </PropertyGroup>
+	
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.14">
