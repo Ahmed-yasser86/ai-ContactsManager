@@ -39,8 +39,9 @@ jobs:
       - name: Run linters
         uses: wearerequired/lint-action@v2.3.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          dotnet_format: true    
+          github_token: ${{ github.token }}
+          dotnet_format: true
+          neutral_check_on_warning: false
 
   build:
     name: Build Application
