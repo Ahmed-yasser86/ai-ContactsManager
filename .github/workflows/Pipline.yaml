@@ -125,6 +125,6 @@ jobs:
         uses: docker/build-push-action@v7.2.0
         with:
           context: .
-          file: ./Dockerfile
+          file: ./ContactsManager.UI/Dockerfile
           push: false
           tags: contacts-manager-ui:${{ github.sha }}
