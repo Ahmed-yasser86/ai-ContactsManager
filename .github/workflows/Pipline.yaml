@@ -59,6 +59,9 @@ jobs:
         run: dotnet build --no-restore
         working-directory: ContactsManager.UI
 
+
+
+        
   sonar:
     
     env:
