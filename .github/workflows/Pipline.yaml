@@ -15,10 +15,6 @@ on:
 
 
 
-
-
-
-
 jobs:
   lint:
     name: Lint Code base
@@ -58,6 +54,28 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
         working-directory: ContactsManager.UI
+
+
+  security_scan:
+    name: Security Vulnerability Scanning
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Setup and Restore
+        uses: ./.github/actions/CacheDependencies
+
+      - name: Run OWASP Dependency Check
+        uses: ./.github/actions/SecurityScan/DependencyCheck
+        with:
+          project_name: 'ContactsManager'
+
+
+
 
   sonar:
     
