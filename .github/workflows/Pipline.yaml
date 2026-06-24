@@ -23,7 +23,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Setup and Restore
-        uses: ./.github/actions/CacheDependencies
+        uses: ./.github/actions
 
       - name: Run linters
         uses: wearerequired/lint-action@v2.3.0
@@ -41,7 +41,7 @@ jobs:
       contents: read
     steps:
       - name: Setup and Restore
-        uses: ./.github/actions/CacheDependencies
+        uses: ./.github/actions
 
       - name: Build
         run: dotnet build --no-restore
@@ -59,7 +59,7 @@ jobs:
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
     steps:
       - name: Setup and Restore
-        uses: ./.github/actions/CacheDependencies
+        uses: ./.github/actions
 
       - name: Run Specified Unit and Integration Tests
         run: |
@@ -87,7 +87,7 @@ jobs:
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
     steps:
       - name: Setup .NET without Default Restore
-        uses: ./.github/actions/CacheDependencies
+        uses: ./.github/actions
         with:
           restore: 'false'
 
