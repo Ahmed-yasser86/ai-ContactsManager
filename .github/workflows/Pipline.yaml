@@ -82,7 +82,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build , sonar]
     permissions:
       contents: read
     env:
