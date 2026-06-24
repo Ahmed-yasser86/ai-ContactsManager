@@ -10,6 +10,7 @@ inputs:
   organization:
     description: 'The SonarCloud organization key'
     required: true
+
 runs:
   using: 'composite'
   steps:
@@ -38,14 +39,15 @@ runs:
     - name: Install SonarScanner and Coverage Tools (with Cache Check)
       shell: bash
       run: |
-        if ! dotnet tool list --global | grep -q "dotnet-sonarscanner"; then
-          echo "Installing dotnet-sonarscanner..."
-          dotnet tool install --global dotnet-sonarscanner
-        fi
-        if ! dotnet tool list --global | grep -q "dotnet-coverage"; then
-          echo "Installing dotnet-coverage..."
-          dotnet tool install --global dotnet-coverage
-        fi
+          if ! dotnet tool list --global | grep -q "dotnet-sonarscanner"; then
+            echo "Installing dotnet-sonarscanner..."
+            dotnet tool install --global dotnet-sonarscanner
+          fi
+
+          if ! dotnet tool list --global | grep -q "dotnet-coverage"; then
+            echo "Installing dotnet-coverage..."
+            dotnet tool install --global dotnet-coverage
+          fi
 
     - name: Sonar Scanner Begin
       shell: bash
@@ -55,13 +57,15 @@ runs:
             /k:"${{ inputs.project_key }}" \
             /o:"${{ inputs.organization }}" \
             /d:sonar.token="${{ inputs.sonar_token }}" \
-            /d:sonar.host.url="https://sonarcloud.io"
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.qualitygate.wait=true
         else
           dotnet sonarscanner begin \
             /k:"${{ inputs.project_key }}" \
             /o:"${{ inputs.organization }}" \
             /d:sonar.token="${{ inputs.sonar_token }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.qualitygate.wait=true \
             /d:sonar.branch.name="${{ github.ref_name }}"
         fi
 
