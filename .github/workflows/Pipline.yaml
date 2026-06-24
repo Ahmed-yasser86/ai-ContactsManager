@@ -23,10 +23,10 @@ jobs:
       pull-requests: write
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v4
 
       - name: Setup and Restore
-        uses: ./.github/actions/CacheDependencies.yaml
+        uses: ./.github/actions/CacheDependencies
 
       - name: Run linters
         uses: wearerequired/lint-action@v2.3.0
@@ -44,10 +44,10 @@ jobs:
       contents: read
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v4
 
       - name: Setup and Restore
-        uses: ./.github/actions/CacheDependencies.yaml
+        uses: ./.github/actions/CacheDependencies
 
       - name: Build
         run: dotnet build --no-restore
@@ -65,10 +65,10 @@ jobs:
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v4
 
       - name: Setup and Restore
-        uses: ./.github/actions/CacheDependencies.yaml
+        uses: ./.github/actions/CacheDependencies
 
       - name: Run Specified Unit and Integration Tests
         run: |
@@ -96,10 +96,10 @@ jobs:
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v4
 
-      - name: Setup .NET without Default Restore
-        uses: ./.github/actions/CacheDependencies.yaml
+      - name: Setup and Restore
+        uses: ./.github/actions/CacheDependencies
         with:
           restore: 'false'
 
@@ -128,7 +128,7 @@ jobs:
       actions: write
     steps:
       - name: Check Out Code
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
