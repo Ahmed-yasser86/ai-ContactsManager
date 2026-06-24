@@ -70,7 +70,7 @@ jobs:
         uses: ./.github/actions/CacheDependencies
 
       - name: Run OWASP Dependency Check
-        uses: ./.github/actions/SecurityScan/DependencyCheck
+        uses:  ./.github/actions/OWASP_Dependency_Check
         with:
           project_name: 'ContactsManager'
 
