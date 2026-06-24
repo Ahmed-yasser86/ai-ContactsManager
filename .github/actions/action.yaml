@@ -1,5 +1,5 @@
 name: 'Setup .NET and Restore Dependencies'
-description: 'Checks out code, installs the .NET SDK via global.json with caching, and restores dependencies.'
+description: 'Installs the .NET SDK via global.json with caching and restores dependencies.'
 
 inputs:
   restore:
@@ -10,9 +10,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Check out Git repository
-      uses: actions/checkout@v7.0.0
-
     - name: Setup .NET
       uses: actions/setup-dotnet@v4  
       with:

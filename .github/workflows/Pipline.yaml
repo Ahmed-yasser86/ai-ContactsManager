@@ -22,8 +22,11 @@ jobs:
       checks: write
       pull-requests: write
     steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7.0.0
+
       - name: Setup and Restore
-        uses: ./.github/actions
+        uses: ./.github/actions/CacheDependencies.yaml
 
       - name: Run linters
         uses: wearerequired/lint-action@v2.3.0
@@ -40,8 +43,11 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7.0.0
+
       - name: Setup and Restore
-        uses: ./.github/actions
+        uses: ./.github/actions/CacheDependencies.yaml
 
       - name: Build
         run: dotnet build --no-restore
@@ -58,8 +64,11 @@ jobs:
       ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
     steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7.0.0
+
       - name: Setup and Restore
-        uses: ./.github/actions
+        uses: ./.github/actions/CacheDependencies.yaml
 
       - name: Run Specified Unit and Integration Tests
         run: |
@@ -86,8 +95,11 @@ jobs:
       ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
     steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7.0.0
+
       - name: Setup .NET without Default Restore
-        uses: ./.github/actions
+        uses: ./.github/actions/CacheDependencies.yaml
         with:
           restore: 'false'
 
