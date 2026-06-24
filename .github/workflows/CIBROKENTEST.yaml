@@ -1,0 +1,36 @@
+name: CI-Broken-Test
+
+on:
+  push:
+    branches: "master"  # ❌ Syntax Error: جيت هاب متوقع Array مش String عادي هنا بناءً على الـ Rules الصارمة
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ❌ Logical Error (خطأ منطقي): الـ step دي مستحيل تشتغل لأن الشرط دايماً False!
+      - name: Missing Build Step
+        if: ${{ 1 == 2 }}
+        run: echo "Building..."
+
+  sonar:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    # ❌ Parameter Error (بارامترات متعرفة غلط): 
+    # الـ Array هنا مكتوبة غلط وسونار هيعترض على الـ Types، والـ Needs كاتبين جواها جوب مش موجودة أصلاً (test)
+    needs: [build, test]
+    env:
+      GITHUB_TOKEN: true # ❌ Type Error: متوقع String وبعتنا Boolean
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      # ❌ SQL Injection (ثغرة أمنية صارخة):
+      # ممررين بارامتر جيت هاب أوتوماتيك جوه سكريبت السيكول بدون عمل Parameterization أو الهروب من الحروف، 
+      # وده هيرن جرس الإنذار (Security Vulnerability) في السونار فوراً!
+      - name: Run Vulnerable DB Query
+        run: |
+          echo "Executing: SELECT * FROM Users WHERE Username = '${{ github.actor }}' AND Role = 'Admin';"
