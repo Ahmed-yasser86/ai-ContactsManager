@@ -54,6 +54,8 @@ jobs:
         working-directory: ContactsManager.UI
 
   sonar:
+    env:
+     GITHUB_TOKEN: ${{ github.token }}
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
     needs: build
@@ -74,7 +76,7 @@ jobs:
           organization: ${{ secrets.SONAR_ORGANIZATION }}
 
 
-          
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
