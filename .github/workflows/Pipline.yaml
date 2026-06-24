@@ -3,9 +3,9 @@ name: CI
 on:
   workflow_dispatch:  
   push:
-    branches: [main, dev]
+    branches: [master, dev]
   pull_request:
-    branches: [main]
+    branches: [master]
     types:
       - opened
       - edited
@@ -13,6 +13,10 @@ on:
       - synchronize
       - reopened    
 
+
+
+
+      
 jobs:
   lint:
     name: Lint Code base
