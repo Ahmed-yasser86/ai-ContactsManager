@@ -19,7 +19,6 @@ runs:
         distribution: 'zulu'
         java-version: '17'
 
-
     - name: Cache SonarCloud packages
       uses: actions/cache@v4
       with:
@@ -27,7 +26,6 @@ runs:
         key: ${{ runner.os }}-sonar-${{ hashFiles('**/*.csproj') }}
         restore-keys: |
           ${{ runner.os }}-sonar-
-
 
     - name: Cache NuGet packages
       uses: actions/cache@v4
@@ -54,15 +52,30 @@ runs:
             echo "dotnet-coverage is already cached."
           fi
 
-
     - name: Sonar Scanner Begin
       shell: bash
       run: |
-        dotnet sonarscanner begin \
-          /k:"${{ inputs.project_key }}" \
-          /o:"${{ inputs.organization }}" \
-          /d:sonar.token="${{ inputs.sonar_token }}" \
-          /d:sonar.host.url="https://sonarcloud.io"
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          dotnet sonarscanner begin \
+            /k:"${{ inputs.project_key }}" \
+            /o:"${{ inputs.organization }}" \
+            /d:sonar.token="${{ inputs.sonar_token }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.pullrequest.key="${{ github.event.pull_request.number }}" \
+            /d:sonar.pullrequest.branch="${{ github.event.pull_request.head.ref }}" \
+            /d:sonar.pullrequest.base="${{ github.event.pull_request.base.ref }}" \
+            /d:sonar.pullrequest.provider="github" \
+            /d:sonar.pullrequest.github.repository="${{ github.repository }}"
+        else
+          dotnet sonarscanner begin \
+            /k:"${{ inputs.project_key }}" \
+            /o:"${{ inputs.organization }}" \
+            /d:sonar.token="${{ inputs.sonar_token }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.branch.name="${{ github.ref_name }}"
+        fi
 
     - name: Build Project (Required for Sonar to analyze)
       shell: bash
