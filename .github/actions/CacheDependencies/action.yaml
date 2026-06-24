@@ -1,12 +1,10 @@
 name: 'Setup .NET and Restore Dependencies'
 description: 'Installs the .NET SDK via global.json with caching and restores dependencies.'
-
 inputs:
   restore:
     description: 'Whether to run the standard dotnet restore'
     required: false
     default: 'true'
-
 runs:
   using: 'composite'
   steps:
@@ -16,7 +14,6 @@ runs:
         global-json-file: ContactsManager.UI/global.json 
         cache: true
         cache-dependency-path: 'ContactsManager.UI/**/packages.lock.json'
-
     - name: Restore dependencies
       if: ${{ inputs.restore == 'true' }}
       shell: bash
