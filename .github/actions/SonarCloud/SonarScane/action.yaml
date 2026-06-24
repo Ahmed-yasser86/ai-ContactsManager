@@ -18,6 +18,8 @@ runs:
       with:
         distribution: 'zulu'
         java-version: '17'
+
+
     - name: Cache SonarCloud packages
       uses: actions/cache@v4
       with:
@@ -25,6 +27,8 @@ runs:
         key: ${{ runner.os }}-sonar-${{ hashFiles('**/*.csproj') }}
         restore-keys: |
           ${{ runner.os }}-sonar-
+
+
     - name: Cache NuGet packages
       uses: actions/cache@v4
       with:
@@ -32,12 +36,25 @@ runs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('ContactsManager.UI/**/packages.lock.json') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
-    - name: Install SonarScanner Tool
+
+    - name: Install SonarScanner and Coverage Tools (with Cache Check)
       shell: bash
       run: |
-        if ! dotnet tool list --global | grep -q "dotnet-sonarscanner"; then
-          dotnet tool install --global dotnet-sonarscanner
-        fi
+          if ! dotnet tool list --global | grep -q "dotnet-sonarscanner"; then
+            echo "Installing dotnet-sonarscanner..."
+            dotnet tool install --global dotnet-sonarscanner
+          else
+            echo "dotnet-sonarscanner is already cached."
+          fi
+
+          if ! dotnet tool list --global | grep -q "dotnet-coverage"; then
+            echo "Installing dotnet-coverage..."
+            dotnet tool install --global dotnet-coverage
+          else
+            echo "dotnet-coverage is already cached."
+          fi
+
+
     - name: Sonar Scanner Begin
       shell: bash
       run: |
@@ -46,9 +63,15 @@ runs:
           /o:"${{ inputs.organization }}" \
           /d:sonar.token="${{ inputs.sonar_token }}" \
           /d:sonar.host.url="https://sonarcloud.io"
+
     - name: Build Project (Required for Sonar to analyze)
       shell: bash
       run: dotnet build ContactsManager.UI --no-restore
+
+    - name: Run Tests with Coverage
+      shell: bash
+      run: dotnet-coverage collect 'dotnet test ContactsManager.UI --no-restore' -f xml -o 'coverage.xml'
+
     - name: Sonar Scanner End
       shell: bash
       run: dotnet sonarscanner end /d:sonar.token="${{ inputs.sonar_token }}"
