@@ -22,19 +22,8 @@ jobs:
       checks: write
       pull-requests: write
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v7.0.0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4  
-        with:
-          global-json-file: ContactsManager.UI/global.json 
-          cache: true
-          cache-dependency-path: 'ContactsManager.UI/**/packages.lock.json'
-
-      - name: Restore dependencies
-        run: dotnet restore --locked-mode --disable-build-servers -p:UseMultiToolProvider=false
-        working-directory: ContactsManager.UI 
+      - name: Setup and Restore
+        uses: ./.github/actions/CacheDependencies
 
       - name: Run linters
         uses: wearerequired/lint-action@v2.3.0
@@ -51,19 +40,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v7.0.0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4  
-        with:
-          global-json-file: ContactsManager.UI/global.json 
-          cache: true
-          cache-dependency-path: 'ContactsManager.UI/**/packages.lock.json'
-
-      - name: Restore dependencies
-        run: dotnet restore --locked-mode --disable-build-servers -p:UseMultiToolProvider=false
-        working-directory: ContactsManager.UI 
+      - name: Setup and Restore
+        uses: ./.github/actions/CacheDependencies
 
       - name: Build
         run: dotnet build --no-restore
@@ -80,19 +58,8 @@ jobs:
       ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v7.0.0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4  
-        with:
-          global-json-file: ContactsManager.UI/global.json 
-          cache: true
-          cache-dependency-path: 'ContactsManager.UI/**/packages.lock.json'
-
-      - name: Restore dependencies
-        run: dotnet restore --locked-mode --disable-build-servers -p:UseMultiToolProvider=false
-        working-directory: ContactsManager.UI 
+      - name: Setup and Restore
+        uses: ./.github/actions/CacheDependencies
 
       - name: Run Specified Unit and Integration Tests
         run: |
@@ -114,20 +81,15 @@ jobs:
     needs: test
     permissions:
       contents: read
-
     env:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
       Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
-
     steps:
-      - name: Check Out Code
-        uses: actions/checkout@v7.0.0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4  
+      - name: Setup .NET without Default Restore
+        uses: ./.github/actions/CacheDependencies
         with:
-          global-json-file: ContactsManager.UI/global.json 
+          restore: 'false'
 
       - name: Restore Infrastructure Project
         run: dotnet restore ContactsManager.Inferastructure/ContactsManager.Inferastructure.csproj
@@ -152,7 +114,6 @@ jobs:
     permissions:
       contents: read
       actions: write
-
     steps:
       - name: Check Out Code
         uses: actions/checkout@v7.0.0
@@ -170,4 +131,3 @@ jobs:
           build-args: |
             ConnectionStrings__ContactDb=${{ secrets.DB_CONNECTION_STRING }}
             Serilog__WriteTo__2__Args__connectionString=${{ secrets.SERILOG_DB_CONNECTION }}
-        
