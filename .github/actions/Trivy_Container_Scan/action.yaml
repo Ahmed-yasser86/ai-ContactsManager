@@ -1,0 +1,28 @@
+# ==============================================================================
+# Action Name: Trivy Container Image Security Scanner
+# Description: Automatically scans a built Docker image for OS vulnerabilities 
+#              and language-specific library defects using AquaSecurity Trivy.
+#              Fails the build instantly if high or critical threats are found.
+# ==============================================================================
+
+name: 'Trivy Container Scan'
+description: 'Scans built Docker images for high and critical security vulnerabilities'
+
+inputs:
+  image_tag:
+    description: 'The tag of the local Docker image to scan'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Trivy Vulnerability Scanner
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        scan-type: 'image'
+        image-ref: ${{ inputs.image_tag }}
+        format: 'table'
+        exit-code: '1' 
+        ignore-unfixed: true 
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
