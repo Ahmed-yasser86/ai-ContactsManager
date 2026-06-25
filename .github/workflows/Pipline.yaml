@@ -221,6 +221,7 @@ jobs:
     needs: build-image
     permissions:
       contents: read
+      security-events: write
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
