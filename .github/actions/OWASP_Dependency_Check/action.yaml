@@ -1,0 +1,35 @@
+name: 'OWASP Dependency-Check Scan'
+description: 'Runs OWASP Dependency-Check tool for .NET projects using the built-in database'
+
+inputs:
+  project_name:
+    description: 'Name of the project for the report'
+    required: false
+    default: 'ContactsManager'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Depcheck Scan
+      uses: dependency-check/Dependency-Check_Action@main
+      id: Depcheck
+      with:
+        project: ${{ inputs.project_name }}
+        path: '.'
+        format: 'HTML'
+        out: 'dependency-check-reports'
+        args: >
+          --failOnCVSS 7
+          --scan "ContactsManager.UI/**/*.csproj"
+          --scan "**/project.assets.json"
+
+    - name: Upload Dependency Check results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+         name: Dependency-Check-Report
+         path: dependency-check-reports
+         retention-days: 7
+
+# note for future : i want to link the output of this action artifact with ai to puplish
+# to splite the bugs into comenetes and leave ut inside the pull requests before merge
