@@ -1,12 +1,11 @@
 # ==============================================================================
-# Action Name: Trivy Container Image Security Scanner
-# Description: Automatically scans a built Docker image for OS vulnerabilities 
-#              and language-specific library defects using AquaSecurity Trivy.
-#              Fails the build instantly if high or critical threats are found.
+# Action Name: Trivy Container Scan with GitHub Code Scanning
+# Description: Scans Docker images, outputs SARIF data, and uploads it to 
+#              GitHub Security tab to show alerts directly inside PR lines.
 # ==============================================================================
 
 name: 'Trivy Container Scan'
-description: 'Scans built Docker images for high and critical security vulnerabilities'
+description: 'Scans Docker images and integrates with GitHub Security Alerts'
 
 inputs:
   image_tag:
@@ -16,13 +15,19 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Run Trivy Vulnerability Scanner
+    - name: Run Trivy Scanner (SARIF Output)
       uses: aquasecurity/trivy-action@v0.36.0
       with:
         scan-type: 'image'
         image-ref: ${{ inputs.image_tag }}
-        format: 'table'
-        exit-code: '1' 
-        ignore-unfixed: true 
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy Scan Results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v4
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
