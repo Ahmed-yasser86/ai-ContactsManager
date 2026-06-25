@@ -1,5 +1,5 @@
 name: 'OWASP Dependency-Check Scan'
-description: 'Runs OWASP Dependency-Check tool for .NET projects with data caching'
+description: 'Runs OWASP Dependency-Check tool for .NET projects using the built-in database'
 
 inputs:
   project_name:
@@ -10,14 +10,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Cache Dependency Check Data
-      uses: actions/cache@v4
-      with:
-        path: ${{ github.workspace }}/dependency-check-data
-        key: ${{ runner.os }}-depcheck-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-depcheck-
-
     - name: Depcheck Scan
       uses: dependency-check/Dependency-Check_Action@main
       id: Depcheck
@@ -28,7 +20,6 @@ runs:
         out: 'dependency-check-reports'
         args: >
           --failOnCVSS 7
-          --data "${{ github.workspace }}/dependency-check-data"
           --scan "ContactsManager.UI/**/*.csproj"
           --scan "**/project.assets.json"
 
@@ -39,6 +30,5 @@ runs:
          path: dependency-check-reports
          retention-days: 7
 
-
-#note for future : i want to link the output of this action artifact with ai to puplish
-# to splite the bugs into comenetes and leave ut inside the pulll requests  before merge        
+# note for future : i want to link the output of this action artifact with ai to puplish
+# to splite the bugs into comenetes and leave ut inside the pull requests before merge
