@@ -22,7 +22,7 @@ runs:
         scan-type: 'image'
         image-ref: ${{ inputs.image_tag }}
         format: 'table'
-        exit-code: '1' # يوقع الجوب فوراً لو لقى ثغرات تطابق الشروط
-        ignore-unfixed: true # يتجاهل الثغرات اللي ملهاش علاج رسمي نازل عشان ميعطلش الـ pipeline على الفاضي
+        exit-code: '1' 
+        ignore-unfixed: true 
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
