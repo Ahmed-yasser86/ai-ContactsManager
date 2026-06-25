@@ -219,6 +219,8 @@ jobs:
     name: Trivy Container Vulnerability Scan
     runs-on: ubuntu-latest
     needs: build-image
+    permissions:
+      contents: read
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
