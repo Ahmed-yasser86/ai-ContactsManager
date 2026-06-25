@@ -252,7 +252,6 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v4
 
-      # بنحتاج نبني الـ Image سريعاً هنا أو نعمل لها فحص لأن السيرفر معزول
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -263,7 +262,7 @@ jobs:
           file: ./ContactsManager.UI/Dockerfile
           push: false
           tags: contacts-manager-ui:${{ github.sha }}
-          cache-from: type=gha # الكاش هيخلي الخطوة دي تخلص في ثواني بدون إعادة بناء حقيقية
+          cache-from: type=gha 
 
       - name: Execute Trivy Scan via Composite Action
         uses: ./.github/actions/Trivy_Container_Scan
