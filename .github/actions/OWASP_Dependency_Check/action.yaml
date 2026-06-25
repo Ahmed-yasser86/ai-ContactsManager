@@ -1,3 +1,13 @@
+# ==============================================================================
+# Action Name: OWASP Dependency-Check Scan
+# Description: This composite action runs OWASP Dependency-Check to scan .NET 
+#              projects. It generates both HTML reports (for local review) and 
+#              SARIF reports (to be uploaded to GitHub Code Scanning).
+# Arguments:
+#   - --failOnCVSS 7: Fails the build if a vulnerability score is 7.0 or higher.
+#   - --scan: Targets specific .csproj files and project.assets.json files.
+# ==============================================================================
+
 name: 'OWASP Dependency-Check Scan'
 description: 'Runs OWASP Dependency-Check tool for .NET projects using the built-in database'
 
@@ -16,7 +26,7 @@ runs:
       with:
         project: ${{ inputs.project_name }}
         path: '.'
-        format: 'HTML'
+        format: 'HTML, SARIF' 
         out: 'dependency-check-reports'
         args: >
           --failOnCVSS 7
