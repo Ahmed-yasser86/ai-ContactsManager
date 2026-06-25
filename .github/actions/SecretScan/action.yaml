@@ -1,0 +1,26 @@
+# ==============================================================================
+# Action Name: Gitleaks Secret Scan
+# Description: This composite action runs the official Gitleaks tool to scan the 
+#              entire repository history and current codebase. It detects 
+#              accidentally hardcoded sensitive data such as API tokens, 
+#              passwords, and connection strings to prevent security leaks.
+# Arguments:
+#   - detect: Scans all commits and files in the repository.
+#   - --verbose: Prints detailed location and match information in logs.
+#   - --redact: Hides the actual sensitive secrets in the pipeline logs.
+# Note: Ensure the caller job uses 'fetch-depth: 0' in the checkout step
+#       so Gitleaks can scan the full git history.
+# ==============================================================================
+
+name: 'Gitleaks Secret Scan'
+description: 'Scans the repository history and current code for hardcoded secrets like tokens and passwords'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Gitleaks Detection
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        args: detect --verbose --redact
