@@ -105,7 +105,7 @@ jobs:
 
       - name: Check out Git repository
         uses: actions/checkout@v4
-        
+
       - name: Download Dependency Check SARIF report
         uses: actions/download-artifact@v4
         with:
@@ -240,3 +240,32 @@ jobs:
           build-args: |
             ConnectionStrings__ContactDb=${{ secrets.DB_CONNECTION_STRING }}
             Serilog__WriteTo__2__Args__connectionString=${{ secrets.SERILOG_DB_CONNECTION }}
+
+
+  trivy_container_scan:
+    name: Trivy Container Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: build-image 
+    permissions:
+      contents: read
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      # بنحتاج نبني الـ Image سريعاً هنا أو نعمل لها فحص لأن السيرفر معزول
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Re-build Image Locally for Scanning
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./ContactsManager.UI/Dockerfile
+          push: false
+          tags: contacts-manager-ui:${{ github.sha }}
+          cache-from: type=gha # الكاش هيخلي الخطوة دي تخلص في ثواني بدون إعادة بناء حقيقية
+
+      - name: Execute Trivy Scan via Composite Action
+        uses: ./.github/actions/Trivy_Container_Scan
+        with:
+          image_tag: contacts-manager-ui:${{ github.sha }}
