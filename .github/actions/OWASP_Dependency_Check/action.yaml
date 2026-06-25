@@ -26,7 +26,7 @@ runs:
       with:
         project: ${{ inputs.project_name }}
         path: '.'
-        format: 'SARIF' 
+        format: 'HTML' 
         out: 'dependency-check-reports'
         args: >
           --failOnCVSS 7
