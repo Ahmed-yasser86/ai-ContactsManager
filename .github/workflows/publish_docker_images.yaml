@@ -1,0 +1,78 @@
+
+name: Publish Docker Image
+
+on:
+  workflow_run:
+    workflows: ["CI"]          
+    types:
+      - completed
+    branches:
+      - master
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  publish:
+    name: Build and Push to GHCR
+    runs-on: ubuntu-latest
+
+    if: >
+       github.event.workflow_run.conclusion == 'success' &&
+       (github.event.workflow_run.head_branch == 'master' ||
+        github.event.workflow_run.head_branch == 'feature/ci-v2')
+    permissions:
+      contents: read
+      packages: write      
+      attestations: write   # required for artifact attestation
+      id-token: write       # required for artifact attestation
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long                  # always tag with commit SHA
+            type=ref,event=branch                 # tag with branch name
+            type=semver,pattern={{version}}       # tag with version if semver tag pushed
+            type=raw,value=latest,enable=${{ github.event.workflow_run.head_branch == 'master' }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@c887d9748da14dcb42b11cf8bcc773b301ea55b5
+
+      - name: Build and Push Docker Image
+        id: push
+        uses: docker/build-push-action@ff26911fd365b0233252dfbd8eede1c0e9ef9a51
+        with:
+          context: .
+          file: ./ContactsManager.UI/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            ConnectionStrings__ContactDb=${{ secrets.DB_CONNECTION_STRING }}
+            Serilog__WriteTo__2__Args__connectionString=${{ secrets.SERILOG_DB_CONNECTION }}
+
+      - name: Generate Artifact Attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
