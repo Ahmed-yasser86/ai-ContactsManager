@@ -13,7 +13,9 @@ on:
       - synchronize
       - reopened    
 
-
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   lint:
@@ -69,8 +71,6 @@ jobs:
       - name: Run Gitleaks Secret Scan
         uses: ./.github/actions/SecretScan
 
-
-
   security_scan:
     name: Security Vulnerability Scanning
     runs-on: ubuntu-latest
@@ -84,21 +84,18 @@ jobs:
         uses: ./.github/actions/CacheDependencies
 
       - name: Run OWASP Dependency Check
-        uses:  ./.github/actions/OWASP_Dependency_Check
+        uses: ./.github/actions/OWASP_Dependency_Check
         with:
           project_name: 'ContactsManager'
 
-
-
   sonar:
-    
-    env:
-     GITHUB_TOKEN: ${{ github.token }}
-     Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
-     ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
-    needs: [build,test]
+    needs: [build, test]
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
+      ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
     permissions:
       contents: read
       pull-requests: write  
@@ -118,8 +115,6 @@ jobs:
           sonar_token: ${{ secrets.SONAR_TOKEN }}
           project_key: ${{ secrets.SONAR_PROJECT_KEY }}
           organization: ${{ secrets.SONAR_ORGANIZATION }}
-
-
 
   test:
     name: Run Tests
@@ -152,41 +147,6 @@ jobs:
           path: TestResults/
           retention-days: 7
 
-  apply-migrations:
-    name: Apply Database Migrations
-    runs-on: ubuntu-latest
-    needs: test
-    permissions:
-      contents: read
-    env:
-      ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__ContactDb: ${{ secrets.DB_CONNECTION_STRING }}
-      Serilog__WriteTo__2__Args__connectionString: ${{ secrets.SERILOG_DB_CONNECTION }}
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-
-      - name: Setup and Restore
-        uses: ./.github/actions/CacheDependencies
-        with:
-          restore: 'false'
-
-      - name: Restore Infrastructure Project
-        run: dotnet restore ContactsManager.Inferastructure/ContactsManager.Inferastructure.csproj
-
-      - name: Restore UI Project
-        run: dotnet restore ContactsManager.UI/ContactsManager.UI.csproj
-
-      - name: Install EF Core CLI Tool
-        run: dotnet tool install --global dotnet-ef
-
-      - name: Migrate ContactDb
-        run: |
-          dotnet ef database update \
-            --project ContactsManager.Inferastructure/ContactsManager.Inferastructure.csproj \
-            --startup-project ContactsManager.UI/ContactsManager.UI.csproj \
-            --context AppDBContext
-
   build-image:
     name: Build Docker Image
     runs-on: ubuntu-latest
@@ -199,22 +159,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c887d9748da14dcb42b11cf8bcc773b301ea55b5 # used sha dueto sonnar scane requirment 
+        uses: docker/setup-buildx-action@c887d9748da14dcb42b11cf8bcc773b301ea55b5
 
       - name: Build Docker Image
-        uses: docker/build-push-action@ff26911fd365b0233252dfbd8eede1c0e9ef9a51 # used sha dueto sonnar scane requirment 
+        uses: docker/build-push-action@ff26911fd365b0233252dfbd8eede1c0e9ef9a51
         with:
           context: .
           file: ./ContactsManager.UI/Dockerfile
           push: false
-          load: true  
+          load: true
           cache-to: type=gha,mode=max
-          cache-from: type=gha  
+          cache-from: type=gha
           tags: contacts-manager-ui:${{ github.sha }}
           build-args: |
             ConnectionStrings__ContactDb=${{ secrets.DB_CONNECTION_STRING }}
             Serilog__WriteTo__2__Args__connectionString=${{ secrets.SERILOG_DB_CONNECTION }}
-
 
   trivy_container_scan:
     name: Trivy Container Vulnerability Scan
@@ -228,19 +187,76 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@c887d9748da14dcb42b11cf8bcc773b301ea55b5  
 
       - name: Build and Load Image Locally
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@ff26911fd365b0233252dfbd8eede1c0e9ef9a51  
         with:
           context: . 
           file: ./ContactsManager.UI/Dockerfile 
           push: false
           load: true 
           tags: contacts-manager-ui:${{ github.sha }}
-          cache-from: type=gha
+          cache-from: type=gha  
 
       - name: Execute Trivy Scan via Composite Action
         uses: ./.github/actions/Trivy_Container_Scan
         with:
           image_tag: contacts-manager-ui:${{ github.sha }}
+
+  publish-image:
+    name: Publish Docker Image to GHCR
+    runs-on: ubuntu-latest
+    needs: [trivy_container_scan, sonar, secret_scan, security_scan]  
+    if: >
+      (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/feature/ci-v2') &&
+      (github.event_name == 'push' || github.event_name == 'pull_request')
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=raw,value=latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@c887d9748da14dcb42b11cf8bcc773b301ea55b5
+
+      - name: Build and Push Docker Image
+        id: push
+        uses: docker/build-push-action@ff26911fd365b0233252dfbd8eede1c0e9ef9a51
+        with:
+          context: .
+          file: ./ContactsManager.UI/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          build-args: |
+            ConnectionStrings__ContactDb=${{ secrets.DB_CONNECTION_STRING }}
+            Serilog__WriteTo__2__Args__connectionString=${{ secrets.SERILOG_DB_CONNECTION }}
+
+      - name: Generate Artifact Attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
