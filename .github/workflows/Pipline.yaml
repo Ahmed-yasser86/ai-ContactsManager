@@ -3,7 +3,7 @@ name: CI
 on:
   workflow_dispatch:  
   push:
-    branches: [master, dev]
+    branches: [master, dev,feature/ci-v2]
   pull_request:
     branches: [master]
     types:
@@ -12,6 +12,8 @@ on:
       - review_requested
       - synchronize
       - reopened    
+
+
 
 env:
   REGISTRY: ghcr.io
