@@ -808,7 +808,3 @@ A: Defense in depth. No single tool catches everything.
 *Built from scratch. Secured by design. Deployed with confidence.*
 
 ---
-
-الدوكس دلوقتي **وصفي بحت** — بيشرح إيه اللي بيحصل من غير ما يحط أرقام وهمية.
-
-أنا مستنى الملفات منك عشان ابدأ اشتغل على المشروع الفعلي 🚀
