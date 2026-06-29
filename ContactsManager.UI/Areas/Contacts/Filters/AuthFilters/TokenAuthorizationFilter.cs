@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace StocksApp2.Areas.Contacts.Filters.AuthFilters
+namespace ContactsManager.Areas.Contacts.Filters.AuthFilters
 {
     public class TokenAuthorizationFilter : IAuthorizationFilter
     {
