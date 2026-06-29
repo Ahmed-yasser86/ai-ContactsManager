@@ -10,12 +10,12 @@ using ServiceContracts;
 using ServiceContracts.DTOs;
 using ServiceContracts.DTOs.Enums;
 using Servicess;
-using StocksApp2.ContactComponent.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using ContactsManager.UI.Areas.Contacts.Controllers;
 
 namespace CRUDTests.ControllersTest
 {
